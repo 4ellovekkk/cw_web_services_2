@@ -42,7 +42,7 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname,"client","dist")));
+app.use(express.static(path.join(__dirname,"../react-ts","dist")));
 
 // ROUTES
 app.use("/auth", authRoutes);
@@ -51,7 +51,7 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/uni", uniRouter);
 app.use("/documents", documenteRouter);
 app.get("/", (req, res) => {
-res.sendFile(path.join(__dirname,"client","dist","index.html"));
+res.sendFile(path.join(__dirname,"../react-ts","index.html"));
 });
 
 // AUTH
