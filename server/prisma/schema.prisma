@@ -8,66 +8,68 @@ datasource db {
 }
 
 model role {
-  id               Int     @id(map: "PK__role__3213E83FEC78A5E3") @default(autoincrement())
+  id               Int     @id(map: "PK__role__3213E83F54CFEC07") @default(autoincrement())
   role_name        String? @db.NVarChar(200)
   role_privs_level Int?
   users            users[]
 }
 
 model users {
-  id                                   Int         @id(map: "PK__users__3213E83F734307E6") @default(autoincrement())
-  first_name                           String?     @db.NVarChar(200)
-  midle_name                           String?     @db.NVarChar(200)
-  last_name                            String?     @db.NVarChar(200)
-  phone                                String?     @db.NChar(15)
-  user_type                            String?     @db.NVarChar(50)
-  username                             String      @unique(map: "UQ__users__F3DBC5722C7A1A15") @db.VarChar(200)
-  passwd                               String?     @db.VarChar(255)
+  id                                   Int        @id(map: "PK__users__3213E83FBBAEC126") @default(autoincrement())
+  first_name                           String?    @db.NVarChar(200)
+  midle_name                           String?    @db.NVarChar(200)
+  last_name                            String?    @db.NVarChar(200)
+  phone                                String?    @db.NChar(15)
+  user_type                            String?    @db.NVarChar(50)
+  username                             String     @unique(map: "UQ__users__F3DBC572BBE7A41C") @db.VarChar(200)
+  passwd                               String?    @db.VarChar(255)
   user_role                            Int?
   is_locked                            Boolean?
-  position                             String?     @db.NVarChar(200)
+  position                             String?    @db.NVarChar(200)
   is_dean                              Boolean?
   specialty                            Int?
   faculty                              Int?
   group_number                         Int?
   is_headman                           Boolean?
-  documents                            documents[]
-  faculties                            faculties?  @relation(fields: [faculty], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__users__faculty__4316F928")
-  specialty_users_specialtyTospecialty specialty?  @relation("users_specialtyTospecialty", fields: [specialty], references: [id], onDelete: Cascade, map: "FK__users__specialty__4222D4EF")
-  role                                 role?       @relation(fields: [user_role], references: [id], onDelete: Cascade, map: "FK__users__user_role__3E52440B")
+  faculties                            faculties? @relation(fields: [faculty], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__users__faculty__4316F928")
+  specialty_users_specialtyTospecialty specialty? @relation("users_specialtyTospecialty", fields: [specialty], references: [id], onDelete: Cascade, map: "FK__users__specialty__4222D4EF")
+  role                                 role?      @relation(fields: [user_role], references: [id], onDelete: Cascade, map: "FK__users__user_role__3E52440B")
 }
 
 model document_types {
-  id                   Int         @id(map: "PK__document__3213E83F19A0F946") @default(autoincrement())
+  id                   Int         @id(map: "PK__document__3213E83F700BF261") @default(autoincrement())
   document_name        String?     @db.NVarChar(200)
   is_payment_mandatory Boolean?
   documents            documents[]
 }
 
 model documents {
-  id               Int            @id(map: "PK__document__3213E83F52DDE3D9") @default(autoincrement())
+  id               Int            @id(map: "PK__document__3213E83F8ED60E44") @default(autoincrement())
   document_type_id Int
   content          String         @db.NVarChar(Max)
-  created_at       DateTime?      @default(now(), map: "DF__documents__creat__4CA06362") @db.DateTime
-  updated_at       DateTime?      @default(now(), map: "DF__documents__updat__4D94879B") @db.DateTime
+  created_at       DateTime?      @default(now(), map: "DF__documents__creat__47DBAE45") @db.DateTime
+  updated_at       DateTime?      @default(now(), map: "DF__documents__updat__48CFD27E") @db.DateTime
   is_approved      Boolean?
   is_dean_required Boolean?
-  created_by       Int?
-  users            users?         @relation(fields: [created_by], references: [id], onDelete: Cascade, map: "FK__documents__creat__4F7CD00D")
   document_types   document_types @relation(fields: [document_type_id], references: [id], onDelete: Cascade, map: "FK__documents__docum__4CA06362")
 }
 
 model faculties {
-  id           Int         @id(map: "PK__facultie__3213E83F5D10CE2B") @default(autoincrement())
-  faculty_name String?     @unique(map: "UQ__facultie__22BC13FB86058B5E") @db.NVarChar(200)
+  id           Int         @id(map: "PK__facultie__3213E83F62820F65") @default(autoincrement())
+  faculty_name String?     @unique(map: "UQ__facultie__22BC13FB38009ADC") @db.NVarChar(200)
   specialty    specialty[]
   users        users[]
 }
 
 model specialty {
-  id                               Int        @id(map: "PK__specialt__3213E83FB6B659D1") @default(autoincrement())
+  id                               Int        @id(map: "PK__specialt__3213E83F42F76032") @default(autoincrement())
   faculty                          Int?
-  spec_name                        String?    @unique(map: "UQ__specialt__B99801B1EC13B442") @db.NVarChar(200)
+  spec_name                        String?    @unique(map: "UQ__specialt__B99801B193423F12") @db.NVarChar(200)
   faculties                        faculties? @relation(fields: [faculty], references: [id], onDelete: Cascade, map: "FK__specialty__facul__3B75D760")
   users_users_specialtyTospecialty users[]    @relation("users_specialtyTospecialty")
+}
+
+model DocumentsProve {
+  id       Int   @id(map: "PK__Document__3213E83F31652B8D") @default(autoincrement())
+  document Bytes
 }
