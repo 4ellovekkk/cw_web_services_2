@@ -1,80 +1,110 @@
-CREATE DATABASE web_services_cw;
-
+CREATE DATABASE Web_Services_Cw;
 GO
-;
 
-USE web_services_cw;
+USE Web_Services_Cw;
 
 -- Таблица ролей
-CREATE TABLE role
+CREATE TABLE Role
 (
     id               INT IDENTITY (1, 1) PRIMARY KEY,
-    role_name        NVARCHAR(200),
-    role_privs_level INT
+    role_name        NVARCHAR(200) DEFAULT 'user',
+    role_privs_level INT           DEFAULT 0
 );
 
 -- Таблица факультетов
-CREATE TABLE faculties
+CREATE TABLE Faculties
 (
     id           INT IDENTITY (1, 1) PRIMARY KEY,
-    faculty_name NVARCHAR(200) unique
+    faculty_name NVARCHAR(200) UNIQUE
 );
 
 -- Таблица специальностей
-CREATE TABLE specialty
+CREATE TABLE Specialty
 (
-    id        INT IDENTITY (1, 1) PRIMARY KEY,
-    faculty   INT FOREIGN KEY REFERENCES faculties (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    spec_name NVARCHAR(200) unique
+    id         INT IDENTITY (1, 1) PRIMARY KEY,
+    faculty_id INT FOREIGN KEY REFERENCES faculties (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    spec_name  NVARCHAR(200) UNIQUE
 );
 
--- Общая таблица пользователей
-CREATE TABLE users
+-- Таблица пользователей
+CREATE TABLE Users
 (
     id           INT IDENTITY (1, 1) PRIMARY KEY,
-    first_name   NVARCHAR(200),
-    midle_name   NVARCHAR(200),
-    last_name    NVARCHAR(200),
-    phone        NCHAR(15),
-    user_type    NVARCHAR(50),
-    -- Тип пользователя: 'worker' или 'student'
+    first_name   NVARCHAR(200) DEFAULT 'Unknown',
+    middle_name  NVARCHAR(200) DEFAULT 'Unknown',
+    last_name    NVARCHAR(200) DEFAULT 'Unknown',
+    phone        NCHAR(15)     DEFAULT '000000000000000',
+    user_type    NVARCHAR(50)  DEFAULT 'student', -- 'worker' or 'student'
     username     VARCHAR(200) UNIQUE NOT NULL,
-    passwd       VARCHAR(255),
-    user_role    INT FOREIGN KEY REFERENCES role (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    is_locked    BIT,
-    position     NVARCHAR(200),
-    is_dean      BIT,
-    specialty    INT FOREIGN KEY REFERENCES specialty (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    faculty      INT FOREIGN KEY REFERENCES faculties (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    group_number INT,
-    is_headman   BIT
-);
-
--- Таблица типов документов
-CREATE TABLE document_types
-(
-    id                   INT IDENTITY (1, 1) PRIMARY KEY,
-    document_name        NVARCHAR(200),
-    is_payment_mandatory BIT
+    passwd       VARCHAR(255)  DEFAULT '',
+    user_role    INT                 NOT NULL FOREIGN KEY REFERENCES role (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    is_locked    BIT           DEFAULT 0,
+    position     NVARCHAR(200) DEFAULT 'N/A',
+    is_dean      BIT           DEFAULT 0,
+    specialty_id INT FOREIGN KEY REFERENCES specialty (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    faculty_id   INT FOREIGN KEY REFERENCES faculties (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    course       INT           DEFAULT 1,
+    group_number INT           DEFAULT 0,
+    is_headman   BIT           DEFAULT 0
 );
 
 -- Таблица документов
-CREATE TABLE documents
+CREATE TABLE DocumentsProve
 (
-    id               INT IDENTITY (1, 1) PRIMARY KEY,
-    -- SERIAL заменен на IDENTITY, так как это SQL Server
-    document_type_id INT           NOT NULL,
-    content          NVARCHAR(MAX) NOT NULL,
-    -- Используем NVARCHAR(MAX) вместо TEXT, так как TEXT устарел в SQL Server
-    created_at       DATETIME DEFAULT GETDATE(),
-    updated_at       DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (document_type_id) REFERENCES document_types (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    is_approved      BIT,
-    is_dean_required BIT
+    id       INT IDENTITY (1,1) PRIMARY KEY,
+    document VARBINARY(MAX) NOT NULL
 );
 
-create table DocumentsProve
+-- Таблица предметов
+CREATE TABLE Subject
 (
-    id       int identity (1,1) primary key,
-    document varbinary(max) not null,
+    id           INT IDENTITY (1,1) PRIMARY KEY,
+    name         NVARCHAR(255) DEFAULT N'testname',
+    teacher_id   INT NOT NULL FOREIGN KEY REFERENCES users (id),
+    has_labs     BIT           DEFAULT 0,
+    hours_amount INT           DEFAULT 0
+);
+
+-- Таблица лабораторных занятий
+CREATE TABLE Labs
+(
+    id           INT IDENTITY (1,1) PRIMARY KEY,
+    subject_id   INT NOT NULL FOREIGN KEY REFERENCES Subject (id),
+    teacher_id   INT FOREIGN KEY REFERENCES users (id),
+    hours_amount INT DEFAULT 0
+);
+
+-- Таблица отработок
+CREATE TABLE Otrabotka
+(
+    id          INT IDENTITY (1,1) PRIMARY KEY,
+    created_by  INT                                            NOT NULL FOREIGN KEY REFERENCES users (id),
+    created_at  DATETIME       DEFAULT SYSDATETIME(),
+    updated_at  DATETIME       DEFAULT SYSDATETIME(),
+    skipped_day DATE           DEFAULT GETDATE(),
+    subject_id  INT FOREIGN KEY REFERENCES Subject (id),
+    is_lab      BIT            DEFAULT 0,
+    is_signed   BIT            DEFAULT 0,
+    is_official BIT            DEFAULT 0,
+    proof_id    INT FOREIGN KEY REFERENCES DocumentsProve (id) NULL,
+    total_cost  DECIMAL(10, 2) DEFAULT 0.00
+);
+
+-- Таблица заявлений на пропуск
+CREATE TABLE SkipDay
+(
+    id         INT IDENTITY (1,1) PRIMARY KEY,
+    created_by INT NOT NULL FOREIGN KEY REFERENCES users (id),
+    created_at DATETIME DEFAULT SYSDATETIME(),
+    updated_at DATETIME DEFAULT SYSDATETIME(),
+    is_signed  BIT      DEFAULT 0
+);
+
+-- Таблица заявлений студентов
+CREATE TABLE Student_inquiry
+(
+    id         INT IDENTITY (1,1) PRIMARY KEY,
+    created_at DATETIME DEFAULT SYSDATETIME(),
+    updated_at DATETIME DEFAULT SYSDATETIME(),
+    owner_id   INT NOT NULL FOREIGN KEY REFERENCES users (id)
 );

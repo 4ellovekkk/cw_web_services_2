@@ -7,69 +7,112 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model role {
-  id               Int     @id(map: "PK__role__3213E83F54CFEC07") @default(autoincrement())
-  role_name        String? @db.NVarChar(200)
-  role_privs_level Int?
-  users            users[]
-}
-
-model users {
-  id                                   Int        @id(map: "PK__users__3213E83FBBAEC126") @default(autoincrement())
-  first_name                           String?    @db.NVarChar(200)
-  midle_name                           String?    @db.NVarChar(200)
-  last_name                            String?    @db.NVarChar(200)
-  phone                                String?    @db.NChar(15)
-  user_type                            String?    @db.NVarChar(50)
-  username                             String     @unique(map: "UQ__users__F3DBC572BBE7A41C") @db.VarChar(200)
-  passwd                               String?    @db.VarChar(255)
-  user_role                            Int?
-  is_locked                            Boolean?
-  position                             String?    @db.NVarChar(200)
-  is_dean                              Boolean?
-  specialty                            Int?
-  faculty                              Int?
-  group_number                         Int?
-  is_headman                           Boolean?
-  faculties                            faculties? @relation(fields: [faculty], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__users__faculty__4316F928")
-  specialty_users_specialtyTospecialty specialty? @relation("users_specialtyTospecialty", fields: [specialty], references: [id], onDelete: Cascade, map: "FK__users__specialty__4222D4EF")
-  role                                 role?      @relation(fields: [user_role], references: [id], onDelete: Cascade, map: "FK__users__user_role__3E52440B")
-}
-
-model document_types {
-  id                   Int         @id(map: "PK__document__3213E83F700BF261") @default(autoincrement())
-  document_name        String?     @db.NVarChar(200)
-  is_payment_mandatory Boolean?
-  documents            documents[]
-}
-
-model documents {
-  id               Int            @id(map: "PK__document__3213E83F8ED60E44") @default(autoincrement())
-  document_type_id Int
-  content          String         @db.NVarChar(Max)
-  created_at       DateTime?      @default(now(), map: "DF__documents__creat__47DBAE45") @db.DateTime
-  updated_at       DateTime?      @default(now(), map: "DF__documents__updat__48CFD27E") @db.DateTime
-  is_approved      Boolean?
-  is_dean_required Boolean?
-  document_types   document_types @relation(fields: [document_type_id], references: [id], onDelete: Cascade, map: "FK__documents__docum__4CA06362")
-}
-
-model faculties {
-  id           Int         @id(map: "PK__facultie__3213E83F62820F65") @default(autoincrement())
-  faculty_name String?     @unique(map: "UQ__facultie__22BC13FB38009ADC") @db.NVarChar(200)
-  specialty    specialty[]
-  users        users[]
-}
-
-model specialty {
-  id                               Int        @id(map: "PK__specialt__3213E83F42F76032") @default(autoincrement())
-  faculty                          Int?
-  spec_name                        String?    @unique(map: "UQ__specialt__B99801B193423F12") @db.NVarChar(200)
-  faculties                        faculties? @relation(fields: [faculty], references: [id], onDelete: Cascade, map: "FK__specialty__facul__3B75D760")
-  users_users_specialtyTospecialty users[]    @relation("users_specialtyTospecialty")
-}
-
 model DocumentsProve {
-  id       Int   @id(map: "PK__Document__3213E83F31652B8D") @default(autoincrement())
-  document Bytes
+  id        Int         @id(map: "PK__Document__3213E83F5B73B105") @default(autoincrement())
+  document  Bytes
+  Otrabotka Otrabotka[]
+}
+
+model Faculties {
+  id           Int         @id(map: "PK__Facultie__3213E83FA99A64B7") @default(autoincrement())
+  faculty_name String?     @unique(map: "UQ__Facultie__22BC13FBE92C8690") @db.NVarChar(200)
+  Specialty    Specialty[]
+  Users        Users[]
+}
+
+model Labs {
+  id           Int     @id(map: "PK__Labs__3213E83F1761772D") @default(autoincrement())
+  subject_id   Int
+  teacher_id   Int?
+  hours_amount Int?    @default(0, map: "DF__Labs__hours_amou__5CD6CB2B")
+  Subject      Subject @relation(fields: [subject_id], references: [id], onUpdate: NoAction, map: "FK__Labs__subject_id__5AEE82B9")
+  Users        Users?  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Labs__teacher_id__5BE2A6F2")
+}
+
+model Otrabotka {
+  id             Int             @id(map: "PK__Otrabotk__3213E83F6571605F") @default(autoincrement())
+  created_by     Int
+  created_at     DateTime?       @default(dbgenerated("sysdatetime()"), map: "DF__Otrabotka__creat__60A75C0F") @db.DateTime
+  updated_at     DateTime?       @default(dbgenerated("sysdatetime()"), map: "DF__Otrabotka__updat__619B8048") @db.DateTime
+  skipped_day    DateTime?       @default(now(), map: "DF__Otrabotka__skipp__628FA481") @db.Date
+  subject_id     Int?
+  is_lab         Boolean?        @default(false, map: "DF__Otrabotka__is_la__6477ECF3")
+  is_signed      Boolean?        @default(false, map: "DF__Otrabotka__is_si__656C112C")
+  is_official    Boolean?        @default(false, map: "DF__Otrabotka__is_of__66603565")
+  proof_id       Int?
+  total_cost     Decimal?        @default(0.00, map: "DF__Otrabotka__total__68487DD7") @db.Decimal(10, 2)
+  Users          Users           @relation(fields: [created_by], references: [id], onUpdate: NoAction, map: "FK__Otrabotka__creat__5FB337D6")
+  DocumentsProve DocumentsProve? @relation(fields: [proof_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Otrabotka__proof__6754599E")
+  Subject        Subject?        @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Otrabotka__subje__6383C8BA")
+}
+
+model Role {
+  id               Int     @id(map: "PK__Role__3213E83FB1D461A5") @default(autoincrement())
+  role_name        String? @default("user", map: "DF__Role__role_name__37A5467C") @db.NVarChar(200)
+  role_privs_level Int?    @default(0, map: "DF__Role__role_privs__38996AB5")
+  Users            Users[]
+}
+
+model SkipDay {
+  id         Int       @id(map: "PK__SkipDay__3213E83FC72EA6BF") @default(autoincrement())
+  created_by Int
+  created_at DateTime? @default(dbgenerated("sysdatetime()"), map: "DF__SkipDay__created__6C190EBB") @db.DateTime
+  updated_at DateTime? @default(dbgenerated("sysdatetime()"), map: "DF__SkipDay__updated__6D0D32F4") @db.DateTime
+  is_signed  Boolean?  @default(false, map: "DF__SkipDay__is_sign__6E01572D")
+  Users      Users     @relation(fields: [created_by], references: [id], onUpdate: NoAction, map: "FK__SkipDay__created__6B24EA82")
+}
+
+model Specialty {
+  id         Int        @id(map: "PK__Specialt__3213E83FE807A697") @default(autoincrement())
+  faculty_id Int?
+  spec_name  String?    @unique(map: "UQ__Specialt__B99801B180ABE715") @db.NVarChar(200)
+  Faculties  Faculties? @relation(fields: [faculty_id], references: [id], onDelete: Cascade, map: "FK__Specialty__facul__3F466844")
+  Users      Users[]
+}
+
+model Student_inquiry {
+  id         Int       @id(map: "PK__Student___3213E83FA60940C9") @default(autoincrement())
+  created_at DateTime? @default(dbgenerated("sysdatetime()"), map: "DF__Student_i__creat__70DDC3D8") @db.DateTime
+  updated_at DateTime? @default(dbgenerated("sysdatetime()"), map: "DF__Student_i__updat__71D1E811") @db.DateTime
+  owner_id   Int
+  Users      Users     @relation(fields: [owner_id], references: [id], onUpdate: NoAction, map: "FK__Student_i__owner__72C60C4A")
+}
+
+model Subject {
+  id           Int         @id(map: "PK__Subject__3213E83FCCF14C75") @default(autoincrement())
+  name         String?     @default("N'testname'", map: "DF__Subject__name__5535A963") @db.NVarChar(255)
+  teacher_id   Int
+  has_labs     Boolean?    @default(false, map: "DF__Subject__has_lab__571DF1D5")
+  hours_amount Int?        @default(0, map: "DF__Subject__hours_a__5812160E")
+  Labs         Labs[]
+  Otrabotka    Otrabotka[]
+  Users        Users       @relation(fields: [teacher_id], references: [id], onUpdate: NoAction, map: "FK__Subject__teacher__5629CD9C")
+}
+
+model Users {
+  id              Int               @id(map: "PK__Users__3213E83FC2AA17C4") @default(autoincrement())
+  first_name      String?           @default("Unknown", map: "DF__Users__first_nam__4316F928") @db.NVarChar(200)
+  middle_name     String?           @default("Unknown", map: "DF__Users__middle_na__440B1D61") @db.NVarChar(200)
+  last_name       String?           @default("Unknown", map: "DF__Users__last_name__44FF419A") @db.NVarChar(200)
+  phone           String?           @default("000000000000000", map: "DF__Users__phone__45F365D3") @db.NChar(15)
+  user_type       String?           @default("student", map: "DF__Users__user_type__46E78A0C") @db.NVarChar(50)
+  username        String            @unique(map: "UQ__Users__F3DBC57212EF8550") @db.VarChar(200)
+  passwd          String?           @default("", map: "DF__Users__passwd__47DBAE45") @db.VarChar(255)
+  user_role       Int
+  is_locked       Boolean?          @default(false, map: "DF__Users__is_locked__49C3F6B7")
+  position        String?           @default("N/A", map: "DF__Users__position__4AB81AF0") @db.NVarChar(200)
+  is_dean         Boolean?          @default(false, map: "DF__Users__is_dean__4BAC3F29")
+  specialty_id    Int?
+  faculty_id      Int?
+  course          Int?              @default(1, map: "DF__Users__course__4E88ABD4")
+  group_number    Int?              @default(0, map: "DF__Users__group_num__4F7CD00D")
+  is_headman      Boolean?          @default(false, map: "DF__Users__is_headma__5070F446")
+  Labs            Labs[]
+  Otrabotka       Otrabotka[]
+  SkipDay         SkipDay[]
+  Student_inquiry Student_inquiry[]
+  Subject         Subject[]
+  Faculties       Faculties?        @relation(fields: [faculty_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Users__faculty_i__4D94879B")
+  Specialty       Specialty?        @relation(fields: [specialty_id], references: [id], onDelete: Cascade, map: "FK__Users__specialty__4CA06362")
+  Role            Role              @relation(fields: [user_role], references: [id], onDelete: Cascade, map: "FK__Users__user_role__48CFD27E")
 }

@@ -32,18 +32,17 @@ const credentials = {
 const server = https.createServer(credentials, app);
 
 // MIDDLEWARE
-
 const cors = require("cors");
 const corsOptions = {
-  origin: ["localhost:5173"],
+  origin: ["https://localhost:5173"],
+  credentials:true,
 };
+
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set("view engine", "ejs");
-app.engine("ejs", require("ejs").__express);
-app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname,"client","dist")));
 
 // ROUTES
 app.use("/auth", authRoutes);
@@ -52,11 +51,12 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/uni", uniRouter);
 app.use("/documents", documenteRouter);
 app.get("/", (req, res) => {
-  res.redirect(`/auth/login`);
+res.sendFile(path.join(__dirname,"client","dist","index.html"));
 });
 
 // AUTH
 const prisma = new PrismaClient();
+
 // Port configuration
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
