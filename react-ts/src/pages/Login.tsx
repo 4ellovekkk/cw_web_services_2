@@ -1,46 +1,140 @@
 
-import { useState } from "react";
-import { loginUser } from "../api/auth";
-import { useNavigate } from "react-router-dom";
+import { LockOutlined } from '@mui/icons-material';
+import {
+  Container,
+  CssBaseline,
+  Box,
+  Avatar,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Link,
+  Paper,
+  CircularProgress,
+} from '@mui/material';
+import { useState } from 'react';
 
-const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+interface LoginCredentials {
+  username: string;
+  password: string;
+}
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+interface LoginPageProps {
+  onLogin?: (credentials: LoginCredentials) => Promise<void>;
+  isLoading?: boolean;
+}
+
+const LoginPage = ({
+  onLogin = async () => {},
+  isLoading = false,
+}: LoginPageProps) => {
+  const [credentials, setCredentials] = useState<LoginCredentials>({
+    username: '',
+    password: '',
+  });
+  const [error, setError] = useState<string>('');
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    
     try {
-      const data = await loginUser(username, password);
-      console.log("Login successful:", data);
-      navigate("/dashboard"); // Redirect to dashboard
+      await onLogin(credentials);
+      setError('');
     } catch (err) {
-      setError((err as {error:string}).error);
+      setError(err instanceof Error ? err.message : 'Invalid username or password');
     }
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
-    </div>
+    <Container component="main" maxWidth="xs">
+      <CssBaseline />
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+            <LockOutlined />
+          </Avatar>
+          <Typography component="h1" variant="h5">
+            Sign in
+          </Typography>
+
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, width: '100%' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              autoFocus
+              value={credentials.username}
+              onChange={(e) =>
+                setCredentials((prev) => ({ ...prev, username: e.target.value }))
+              }
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="password"
+              label="Password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              value={credentials.password}
+              onChange={(e) =>
+                setCredentials((prev) => ({ ...prev, password: e.target.value }))
+              }
+            />
+
+            {error && (
+              <Typography color="error" sx={{ mt: 1 }}>
+                {error}
+              </Typography>
+            )}
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  Signing in...
+                  <CircularProgress size={20} sx={{ ml: 2, color: 'white' }} />
+                </>
+              ) : (
+                'Sign in'
+              )}
+            </Button>
+
+            <Grid container>
+              <Grid item xs>
+                <Link href="#" variant="body2">
+                  Forgot password?
+                </Link>
+              </Grid>
+              <Grid item>
+                <Link href="/register" variant="body2">
+                  {"Don't have an account? Sign Up"}
+                </Link>
+              </Grid>
+            </Grid>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 
-export default Login;
+export default LoginPage;
+

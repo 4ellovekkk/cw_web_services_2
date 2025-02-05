@@ -19,11 +19,10 @@ interface ApiError {
 }
 
 const API_URL = "https://localhost:3000/auth";
-
-axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
+axios.defaults.withCredentials = true;
 
 // Function to log in a user
-export const loginUser = async (
+const loginUser = async (
   username: string,
   password: string
 ): Promise<LoginResponse> => {
@@ -36,7 +35,7 @@ export const loginUser = async (
 };
 
 // Function to log out a user
-export const logoutUser = async (): Promise<void> => {
+const logoutUser = async (): Promise<void> => {
   try {
     await axios.get(`${API_URL}/logout`);
   } catch (error: any) {
@@ -45,11 +44,15 @@ export const logoutUser = async (): Promise<void> => {
 };
 
 // Function to register a user
-export const registerUser = async (userData: RegisterUserData): Promise<void> => {
+const registerUser = async (userData: RegisterUserData): Promise<void> => {
   try {
     await axios.post(`${API_URL}/register`, userData);
   } catch (error: any) {
     throw (error.response?.data as ApiError) || { error: "Registration failed" };
   }
 };
+
+// Export an object with the functions
+const authApi = { loginUser, logoutUser, registerUser };
+export default authApi;
 
