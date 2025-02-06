@@ -1,5 +1,4 @@
-
-import { LockOutlined } from '@mui/icons-material';
+import { LockOutlined } from "@mui/icons-material";
 import {
   Container,
   CssBaseline,
@@ -12,8 +11,8 @@ import {
   Link,
   Paper,
   CircularProgress,
-} from '@mui/material';
-import { useState } from 'react';
+} from "@mui/material";
+import { useState } from "react";
 
 interface LoginCredentials {
   username: string;
@@ -30,19 +29,21 @@ const LoginPage = ({
   isLoading = false,
 }: LoginPageProps) => {
   const [credentials, setCredentials] = useState<LoginCredentials>({
-    username: '',
-    password: '',
+    username: "",
+    password: "",
   });
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
+
     try {
       await onLogin(credentials);
-      setError('');
+      setError("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid username or password');
+      setError(
+        err instanceof Error ? err.message : "Invalid username or password",
+      );
     }
   };
 
@@ -52,19 +53,23 @@ const LoginPage = ({
       <Paper elevation={3} sx={{ p: 4 }}>
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+          <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
             <LockOutlined />
           </Avatar>
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, width: '100%' }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ mt: 2, width: "100%" }}
+          >
             <TextField
               margin="normal"
               required
@@ -76,7 +81,10 @@ const LoginPage = ({
               autoFocus
               value={credentials.username}
               onChange={(e) =>
-                setCredentials((prev) => ({ ...prev, username: e.target.value }))
+                setCredentials((prev) => ({
+                  ...prev,
+                  username: e.target.value,
+                }))
               }
             />
             <TextField
@@ -90,7 +98,10 @@ const LoginPage = ({
               autoComplete="current-password"
               value={credentials.password}
               onChange={(e) =>
-                setCredentials((prev) => ({ ...prev, password: e.target.value }))
+                setCredentials((prev) => ({
+                  ...prev,
+                  password: e.target.value,
+                }))
               }
             />
 
@@ -104,16 +115,22 @@ const LoginPage = ({
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              sx={{
+                mt: 3,
+                mb: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
               disabled={isLoading}
             >
               {isLoading ? (
                 <>
                   Signing in...
-                  <CircularProgress size={20} sx={{ ml: 2, color: 'white' }} />
+                  <CircularProgress size={20} sx={{ ml: 2, color: "white" }} />
                 </>
               ) : (
-                'Sign in'
+                "Sign in"
               )}
             </Button>
 
@@ -137,4 +154,3 @@ const LoginPage = ({
 };
 
 export default LoginPage;
-
