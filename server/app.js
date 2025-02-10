@@ -1,4 +1,3 @@
-
 const express = require("express");
 const https = require("https");
 const fs = require("fs");
@@ -10,7 +9,10 @@ const dashboardRoutes = require("./routes/dashboards");
 const uniRouter = require("./routes/uniRoutes");
 const documenteRouter = require("./routes/documents");
 const path = require("path");
-const { getUserRoleFromToken, getUserIdFromToken } = require("./auth_functions/authHelpers");
+const {
+  getUserRoleFromToken,
+  getUserIdFromToken,
+} = require("./auth_functions/authHelpers");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
@@ -43,8 +45,14 @@ const corsOptions = {
 app.use((req, res, next) => {
   res.setHeader("charset", "utf-8");
   res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, PATCH, DELETE",
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With,content-type",
+  );
   res.setHeader("Access-Control-Allow-Credentials", "true");
   next();
 });
@@ -56,7 +64,7 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "../react-ts", "dist")));
+app.use(express.static(path.join(__dirname, "../react-ts/dist")));
 
 // ROUTES
 app.use("/auth", authRoutes);
@@ -64,8 +72,10 @@ app.use("/users", userRouter);
 app.use("/dashboard", dashboardRoutes);
 app.use("/uni", uniRouter);
 app.use("/documents", documenteRouter);
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../react-ts", "index.html"));
+app.use(express.static(path.join(__dirname, "../react-ts/dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../react-ts/dist", "index.html"));
 });
 
 // Prisma Client
@@ -74,4 +84,3 @@ const prisma = new PrismaClient();
 // Port Configuration
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
