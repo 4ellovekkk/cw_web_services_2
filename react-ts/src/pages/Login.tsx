@@ -13,37 +13,48 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom"; // React Router for navigation
 
 interface LoginCredentials {
   username: string;
   password: string;
 }
 
-interface LoginPageProps {
-  onLogin?: (credentials: LoginCredentials) => Promise<void>;
-  isLoading?: boolean;
-}
-
-const LoginPage = ({
-  onLogin = async () => {},
-  isLoading = false,
-}: LoginPageProps) => {
+const LoginPage = () => {
   const [credentials, setCredentials] = useState<LoginCredentials>({
     username: "",
     password: "",
   });
   const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const navigate = useNavigate(); // For redirecting after login
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     try {
-      await onLogin(credentials);
-      setError("");
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Invalid username or password",
+      const response = await axios.post(
+        "https://localhost:3000/login",
+        credentials,
+        { withCredentials: true }, // Important for cookies to be stored
       );
+
+      const userRole = response.data.role;
+      console.log("User logged in with role:", userRole);
+
+      // Redirect based on role
+      if (userRole === "admin") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Login failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -81,10 +92,7 @@ const LoginPage = ({
               autoFocus
               value={credentials.username}
               onChange={(e) =>
-                setCredentials((prev) => ({
-                  ...prev,
-                  username: e.target.value,
-                }))
+                setCredentials({ ...credentials, username: e.target.value })
               }
             />
             <TextField
@@ -98,10 +106,7 @@ const LoginPage = ({
               autoComplete="current-password"
               value={credentials.password}
               onChange={(e) =>
-                setCredentials((prev) => ({
-                  ...prev,
-                  password: e.target.value,
-                }))
+                setCredentials({ ...credentials, password: e.target.value })
               }
             />
 

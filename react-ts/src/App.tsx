@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import authApi from "@/api/auth";
 import LoginPage from "../src/pages/Login";
 import RegisterPage from "../src/pages/Register";
-import DocumentsPage from "../src/pages/Documents";
-import DocumentTypesPage from "../src/pages/DocumentTypes";
-import DocumentDetailsPage from "../src/pages/DocumentDetails";
+//import DocumentsPage from "../src/pages/Documents"; // Uncommented for use
+//import DocumentTypesPage from "../src/pages/DocumentTypes"; // Uncommented for use
+//import DocumentDetailsPage from "../src/pages/DocumentDetails"; // Uncommented for use
 import NotFoundPage from "../src/pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute"; // A component to guard routes
 
@@ -27,7 +27,7 @@ function App() {
     fetchUser();
   }, []);
 
-  const handleLogin = async (credentials: LoginCredentials) => {
+  const handleLogin = async (credentials) => {
     try {
       const response = await authApi.loginUser(
         credentials.username,
@@ -39,39 +39,41 @@ function App() {
     }
   };
 
+  if (isLoading) {
+    return <p>Loading...</p>; // Show loading state while checking auth
+  }
+
   return (
     <BrowserRouter>
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <Routes>
-          {/* Public Routes */}
-          <Route
-            path="/login"
-            element={
-              user ? (
-                <Navigate to="/documents" />
-              ) : (
-                <LoginPage onLogin={handleLogin} />
-              )
-            }
-          />
-          <Route
-            path="/register"
-            element={user ? <Navigate to="/documents" /> : <RegisterPage />}
-          />
+      <Routes>
+        {/* Public Routes */}
+        <Route
+          path="/login"
+          element={
+            user ? (
+              <Navigate to="/documents" replace />
+            ) : (
+              <LoginPage onLogin={handleLogin} />
+            )
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            user ? <Navigate to="/documents" replace /> : <RegisterPage />
+          }
+        />
 
-          {/* Protected Routes (Only for authenticated users) */}
-          <Route element={<ProtectedRoute user={user} />}>
-            <Route path="/documents" element={<DocumentsPage />} />
-            <Route path="/documents/:id" element={<DocumentDetailsPage />} />
-            <Route path="/document-types" element={<DocumentTypesPage />} />
-          </Route>
+        {/* Protected Routes (Only for authenticated users) */}
+        {/*        <Route element={<ProtectedRoute user={user} />}>
+          <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/documents/:id" element={<DocumentDetailsPage />} />
+          <Route path="/document-types" element={<DocumentTypesPage />} />
+        </Route>*/}
 
-          {/* Catch-all Route */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      )}
+        {/* Catch-all Route for Not Found */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
     </BrowserRouter>
   );
 }

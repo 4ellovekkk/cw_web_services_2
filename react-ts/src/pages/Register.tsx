@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import "./RegisterPage.css"; // Assuming you have a CSS file for styling
+import axios from "axios";
+import "./RegisterPage.css";
+
+const roles = [
+  { id: 1, name: "Student" },
+  { id: 2, name: "Teacher" },
+  { id: 3, name: "Admin" },
+];
 
 const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -8,165 +15,137 @@ const RegisterPage: React.FC = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "1",
+    studentId: "",
+    department: "",
   });
 
-  const [errors, setErrors] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const [errors, setErrors] = useState({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const validateForm = () => {
-    let isValid = true;
-    const newErrors = { ...errors };
-
-    if (!formData.firstName) {
-      newErrors.firstName = "First name is required";
-      isValid = false;
-    } else {
-      newErrors.firstName = "";
-    }
-
-    if (!formData.lastName) {
-      newErrors.lastName = "Last name is required";
-      isValid = false;
-    } else {
-      newErrors.lastName = "";
-    }
-
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email address is invalid";
-      isValid = false;
-    } else {
-      newErrors.email = "";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-      isValid = false;
-    } else if (formData.password.length < 6) {
+    let newErrors: any = {};
+    if (!formData.firstName) newErrors.firstName = "First name is required";
+    if (!formData.lastName) newErrors.lastName = "Last name is required";
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "Valid email is required";
+    if (!formData.password || formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
-      isValid = false;
-    } else {
-      newErrors.password = "";
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Confirm password is required";
-      isValid = false;
-    } else if (formData.confirmPassword !== formData.password) {
+    if (formData.confirmPassword !== formData.password)
       newErrors.confirmPassword = "Passwords do not match";
-      isValid = false;
-    } else {
-      newErrors.confirmPassword = "";
-    }
-
+    if (formData.role === "1" && !formData.studentId)
+      newErrors.studentId = "Student ID is required";
+    if (
+      (formData.role === "2" || formData.role === "3") &&
+      !formData.department
+    )
+      newErrors.department = "Department is required";
     setErrors(newErrors);
-    return isValid;
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (validateForm()) {
-      // Handle form submission
-      console.log("Form submitted successfully", formData);
-      // You can add your API call or further logic here
-    } else {
-      console.log("Form validation failed");
+    if (!validateForm()) return;
+    try {
+      const response = await axios.post("/api/register", formData);
+      console.log("Registration successful:", response.data);
+    } catch (error) {
+      console.error("Registration failed:", error);
     }
   };
 
   return (
     <div className="register-page">
       <div className="register-container">
-        <h1 className="register-title">Create Your Account</h1>
+        <h1>Create Your Account</h1>
         <form onSubmit={handleSubmit} className="register-form">
-          <div className="form-group">
-            <label htmlFor="firstName">First Name</label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              className={errors.firstName ? "error" : ""}
-            />
-            {errors.firstName && (
-              <span className="error-message">{errors.firstName}</span>
-            )}
-          </div>
-          <div className="form-group">
-            <label htmlFor="lastName">Last Name</label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              className={errors.lastName ? "error" : ""}
-            />
-            {errors.lastName && (
-              <span className="error-message">{errors.lastName}</span>
-            )}
-          </div>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={errors.email ? "error" : ""}
-            />
-            {errors.email && (
-              <span className="error-message">{errors.email}</span>
-            )}
-          </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={errors.password ? "error" : ""}
-            />
-            {errors.password && (
-              <span className="error-message">{errors.password}</span>
-            )}
-          </div>
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={errors.confirmPassword ? "error" : ""}
-            />
-            {errors.confirmPassword && (
-              <span className="error-message">{errors.confirmPassword}</span>
-            )}
-          </div>
-          <button type="submit" className="register-button">
-            Register
-          </button>
+          <select name="role" value={formData.role} onChange={handleChange}>
+            {roles.map((role) => (
+              <option key={role.id} value={role.id}>
+                {role.name}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="text"
+            name="firstName"
+            placeholder="First Name"
+            value={formData.firstName}
+            onChange={handleChange}
+          />
+          {errors.firstName && <span>{errors.firstName}</span>}
+
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Last Name"
+            value={formData.lastName}
+            onChange={handleChange}
+          />
+          {errors.lastName && <span>{errors.lastName}</span>}
+
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          {errors.email && <span>{errors.email}</span>}
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+          {errors.password && <span>{errors.password}</span>}
+
+          <input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+          />
+          {errors.confirmPassword && <span>{errors.confirmPassword}</span>}
+
+          {formData.role === "1" && (
+            <>
+              <input
+                type="text"
+                name="studentId"
+                placeholder="Student ID"
+                value={formData.studentId}
+                onChange={handleChange}
+              />
+              {errors.studentId && <span>{errors.studentId}</span>}
+            </>
+          )}
+
+          {(formData.role === "2" || formData.role === "3") && (
+            <>
+              <input
+                type="text"
+                name="department"
+                placeholder="Department"
+                value={formData.department}
+                onChange={handleChange}
+              />
+              {errors.department && <span>{errors.department}</span>}
+            </>
+          )}
+
+          <button type="submit">Register</button>
         </form>
       </div>
     </div>
